@@ -1,5 +1,5 @@
-import React from 'react';
-import {Form, Input} from 'formik-semantic-ui';
+import React, { useEffect, useState } from 'react';
+import {Form, Input, Dropdown} from 'formik-semantic-ui';
 import axios from 'axios';
 import {Container} from 'semantic-ui-react'
 import _ from "lodash";
@@ -14,6 +14,42 @@ const ThesisEditForm = (props) => {
         const id = _.last(ar);
         return id;
     }
+
+    const thesisTypes = [{
+        key: "Bachelor thesis",
+        text: "Bachelor thesis",
+        value: "Bachelor thesis",
+    },
+    {
+        key: "Master thesis",
+        text: "Master thesis",
+        value: "Master thesis",
+    }, {
+        key: "PhD thesis",
+        text: "PhD thesis",
+        value: "PhD thesis",
+    }]
+    
+    const [authors, setAuthors] = useState([]);
+    
+    const authorsToOptions = (items) => {
+        return items.map((item) => {
+            return {key: item._links.self.href, text: item.firstName + item.lastName , value: item._links.self.href}
+        })
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+
+            const authorsResponse = await axios('https://pamak-ils-api.herokuapp.com/authors');
+
+            const authorsData = authorsResponse.data._embedded.authors
+
+            setAuthors(authorsData)
+        }
+
+        fetchData()
+    }, []);
 
     return (
         <Container>
@@ -30,8 +66,7 @@ const ThesisEditForm = (props) => {
                     type: item.type,
                     department: item.department,
                     university: item.university,
-                    //TODO : render the link to the author
-                    author: item.author,
+                    author: item.authorUrl,
                 }}
                 onSubmit={async (values) => {
                     await axios.patch(`https://pamak-ils-api.herokuapp.com/theses/${getIdFromUrl(item._links.thesis.href)}`, values)
@@ -48,10 +83,10 @@ const ThesisEditForm = (props) => {
                 <Input name="title"/>
 
                 <label htmlFor="type">Type</label>
-                <Input name="type"/>
+                <Dropdown name="type" selection options={thesisTypes} />
 
                 <label htmlFor="author">Author</label>
-                <Input name="author"/>
+                <Dropdown name="author" selection options={authorsToOptions(authors)} />
 
                 <label htmlFor="supervisingProfessor">Supervising Professor</label>
                 <Input name="supervisingProfessor"/>

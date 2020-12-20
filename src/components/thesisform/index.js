@@ -1,11 +1,45 @@
-import React from 'react';
-import {Form, Input} from 'formik-semantic-ui';
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Dropdown } from 'formik-semantic-ui';
 import axios from 'axios';
-import {Container} from 'semantic-ui-react'
+import { Container } from 'semantic-ui-react'
 
 
 const ThesisForm = () => {
+    const [authors, setAuthors] = useState([]);
 
+    const authorsToOptions = (items) => {
+        return items.map((item) => {
+            return { key: item._links.self.href, text: item.firstName + item.lastName, value: item._links.self.href }
+        })
+    }
+    
+    const thesisTypes = [{
+        key: "Bachelor thesis",
+        text: "Bachelor thesis",
+        value: "Bachelor thesis",
+    },
+    {
+        key: "Master thesis",
+        text: "Master thesis",
+        value: "Master thesis",
+    }, {
+        key: "PhD thesis",
+        text: "PhD thesis",
+        value: "PhD thesis",
+    }]
+
+    useEffect(() => {
+        const fetchData = async () => {
+
+            const authorsResponse = await axios('https://pamak-ils-api.herokuapp.com/authors');
+
+            const authorsData = authorsResponse.data._embedded.authors
+
+            setAuthors(authorsData)
+        }
+
+        fetchData()
+    }, []);
 
     return (
         <Container>
@@ -36,37 +70,37 @@ const ThesisForm = () => {
                 }}
             >
                 <label htmlFor="title">Title</label>
-                <Input name="title"/>
+                <Input name="title" />
 
-                <label htmlFor="type">Type [Bachelor thesis|Master thesis|PhD thesis]</label>
-                <Input name="type"/>
+                <label htmlFor="type">Type</label>
+                <Dropdown name="type" selection options={thesisTypes} />
 
                 <label htmlFor="author">Author</label>
-                <Input name="author"/>
+                <Dropdown name="author" selection options={authorsToOptions(authors)} />
 
                 <label htmlFor="supervisingProfessor">Supervising Professor</label>
-                <Input name="supervisingProfessor"/>
+                <Input name="supervisingProfessor" />
 
                 <label htmlFor="university">University</label>
-                <Input name="university"/>
+                <Input name="university" />
 
                 <label htmlFor="department">Department</label>
-                <Input name="department"/>
+                <Input name="department" />
 
                 <label htmlFor="field">Field</label>
-                <Input name="field"/>
+                <Input name="field" />
 
                 <label htmlFor="yearOfPublication">Year of publication</label>
-                <Input name="yearOfPublication" placeholder="yyyy" type="number"/>
+                <Input name="yearOfPublication" placeholder="yyyy" type="number" />
 
                 <label htmlFor="refCode">Ref. Core</label>
-                <Input name="refCode"/>
+                <Input name="refCode" />
 
                 <label htmlFor="copies">Copies</label>
-                <Input name="copies" type="number"/>
+                <Input name="copies" type="number" />
 
                 <label htmlFor="pages">Pages</label>
-                <Input name="pages" type="number"/>
+                <Input name="pages" type="number" />
 
 
                 <button type="submit">

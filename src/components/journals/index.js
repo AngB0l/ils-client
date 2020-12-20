@@ -42,6 +42,7 @@ const JournalsTable = () => {
                 const publisherUrl = await axios(journal._links.publisher.href);
                 const publisher =  publisherUrl.data.name;
                 journal.publisher = publisher;
+                journal.publisherUrl = publisherUrl.data._links.self.href
             }))
             setJournals(journals);
         }

@@ -32,13 +32,16 @@ const BooksTable = () => {
             const result = await axios('https://pamak-ils-api.herokuapp.com/books');
             const books = result.data._embedded.books;
             await Promise.all(books.map( async(book) => {
+                
                 const authorsUrl = await axios(book._links.authors.href);
                 const authors =  authorsUrl.data._embedded.authors;
                 book.authors = authors;
+                book.authorsUrl = authorsUrl.data._embedded.authors.map(author => author._links.self.href);
 
                 const publisherUrl = await axios(book._links.publisher.href);
                 const publisher =  publisherUrl.data.name;
                 book.publisher = publisher;
+                book.publisherUrl = publisherUrl.data._links.self.href;
             }))
 
             setBooks(books);

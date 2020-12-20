@@ -1,11 +1,30 @@
-import React from 'react';
-import {Form, Input} from 'formik-semantic-ui';
+import React, { useEffect, useState } from 'react';
+import {Form, Input, Dropdown} from 'formik-semantic-ui';
 import axios from 'axios';
 import {Container} from 'semantic-ui-react'
 
 
 const JournalForm = () => {
+    const [publishers, setPublishers] = useState([]);
+    
+    const publishersToOptions = (items) => {
+        return items.map((item) => {
+            return {key: item._links.self.href, text: item.name, value: item._links.self.href}
+        })
+    }
 
+    useEffect(() => {
+        const fetchData = async () => {
+
+            const publishersReponse = await axios('https://pamak-ils-api.herokuapp.com/publishers');
+
+            const publishersData = publishersReponse.data._embedded.publishers
+
+            setPublishers(publishersData);
+        }
+
+        fetchData()
+    }, []);
 
     return (
         <Container>
@@ -58,7 +77,7 @@ const JournalForm = () => {
                 <Input name="isbn"/>
 
                 <label htmlFor="publisher">Publisher</label>
-                <Input name="publisher"/>
+                <Dropdown name="publisher" selection options={publishersToOptions(publishers)} />
 
                 <label htmlFor="copies">Copies</label>
                 <Input name="copies" type="number"/>

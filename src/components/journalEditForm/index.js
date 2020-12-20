@@ -1,5 +1,5 @@
-import React from 'react';
-import {Form, Input} from 'formik-semantic-ui';
+import React, { useEffect, useState } from 'react';
+import {Form, Input, Dropdown} from 'formik-semantic-ui';
 import axios from 'axios';
 import {Container} from 'semantic-ui-react'
 import _ from "lodash";
@@ -15,6 +15,27 @@ const JournalEditForm = (props) => {
         return id;
     }
 
+    const [publishers, setPublishers] = useState([]);
+    
+    const publishersToOptions = (items) => {
+        return items.map((item) => {
+            return {key: item._links.self.href, text: item.name, value: item._links.self.href}
+        })
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+
+            const publishersReponse = await axios('https://pamak-ils-api.herokuapp.com/publishers');
+
+            const publishersData = publishersReponse.data._embedded.publishers
+
+            setPublishers(publishersData);
+        }
+
+        fetchData()
+    }, []);
+
     return (
         <Container>
             <h1>Journal</h1>
@@ -29,8 +50,7 @@ const JournalEditForm = (props) => {
                     volume: item.volume,
                     issue: item.issue,
                     isbn: item.isbn,
-                    //TODO : render the link to the publisher
-                    publisher: item.publisher,
+                    publisher: item.publisherUrl,
                 }}
                 onSubmit={async (values) => {
                     await axios.patch(`https://pamak-ils-api.herokuapp.com/journals/${getIdFromUrl(item._links.journal.href)}`, values)
@@ -66,8 +86,9 @@ const JournalEditForm = (props) => {
                 <label htmlFor="isbn">ISBN</label>
                 <Input name="isbn"/>
 
+
                 <label htmlFor="publisher">Publisher</label>
-                <Input name="publisher"/>
+                <Dropdown name="publisher" selection options={publishersToOptions(publishers)} />
 
                 <label htmlFor="copies">Copies</label>
                 <Input name="copies" type="number"/>

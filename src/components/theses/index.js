@@ -30,8 +30,9 @@ const ThesesTable = () => {
                 // console.log(authorResponse)
                 const authorFirstName = authorResponse.data.firstName;
                 const authorLastName = authorResponse.data.lastName;
-                const author = authorLastName + authorFirstName;
+                const author =  authorFirstName + " " + authorLastName;
                 thesis.author = author;
+                thesis.authorUrl = authorResponse.data._links.self.href;
 
             }))
 

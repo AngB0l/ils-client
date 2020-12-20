@@ -1,5 +1,5 @@
-import React from 'react';
-import {Form, Input} from 'formik-semantic-ui';
+import React, { useEffect, useState } from 'react';
+import {Form, Input, Dropdown} from 'formik-semantic-ui';
 import axios from 'axios';
 import {Container} from 'semantic-ui-react'
 import _ from "lodash";
@@ -15,6 +15,38 @@ const BookEditForm = (props) => {
         return id;
     }
 
+    const [authors, setAuthors] = useState([]);
+    const [publishers, setPublishers] = useState([]);
+    
+    const publishersToOptions = (items) => {
+        return items.map((item) => {
+            return {key: item._links.self.href, text: item.name, value: item._links.self.href}
+        })
+    }
+
+    const authorsToOptions = (items) => {
+        return items.map((item) => {
+            return {key: item._links.self.href, text: item.firstName + item.lastName , value: item._links.self.href}
+        })
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+
+            const authorsResponse = await axios('https://pamak-ils-api.herokuapp.com/authors');
+            const publishersReponse = await axios('https://pamak-ils-api.herokuapp.com/publishers');
+
+            const authorsData = authorsResponse.data._embedded.authors
+            const publishersData = publishersReponse.data._embedded.publishers
+
+            setAuthors(authorsData)
+            setPublishers(publishersData);
+    
+        }
+
+        fetchData()
+    }, []);
+console.log(item)
     return (
         <Container>
             <h1>Book</h1>
@@ -27,9 +59,8 @@ const BookEditForm = (props) => {
                     refCode: item.refCode,
                     yearOfPublication: item.yearOfPublication,
                     isbn: item.isbn,
-                    //TODO : render the links to the authors & publisher
-                    authors: item.authors,
-                    publisher: item.publisher,
+                    authors: item.authorsUrl,
+                    publisher: item.publisherUrl,
                 }}
                 onSubmit={async (values) => {
                     // authors is expected to be a list
@@ -63,7 +94,7 @@ const BookEditForm = (props) => {
                 <Input name="isbn"/>
 
                 <label htmlFor="publisher">Publisher</label>
-                <Input name="publisher"/>
+                <Dropdown name="publisher" selection options={publishersToOptions(publishers)} />
 
                 <label htmlFor="copies">Copies</label>
                 <Input name="copies" type="number"/>
